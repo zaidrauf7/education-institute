@@ -45,8 +45,8 @@ export const getMyApplications = async (): Promise<ApiResponse<Application[]>> =
   return response.data;
 };
 
-export const getCourses = async (): Promise<ApiResponse<Course[]>> => {
-  const response = await api.get<ApiResponse<Course[]>>('/courses');
+export const getCourses = async (params?: { department?: string }): Promise<ApiResponse<Course[]>> => {
+  const response = await api.get<ApiResponse<Course[]>>('/courses', { params });
   return response.data;
 };
 
@@ -104,6 +104,40 @@ export const updateDepartment = async (id: string, data: any): Promise<ApiRespon
 
 export const deleteDepartment = async (id: string): Promise<ApiResponse<void>> => {
   const response = await api.delete<ApiResponse<void>>(`/departments/${id}`);
+  return response.data;
+};
+
+// --- GPA API FUNCTIONS ---
+
+export const addOrUpdateGPA = async (data: { studentId: string; departmentId: string; semester: number; gpa: number }): Promise<ApiResponse<any>> => {
+  const response = await api.post<ApiResponse<any>>('/gpa', data);
+  return response.data;
+};
+
+export const getStudentGPA = async (studentId: string): Promise<ApiResponse<any[]>> => {
+  const response = await api.get<ApiResponse<any[]>>(`/gpa/student/${studentId}`);
+  return response.data;
+};
+
+// --- REQUEST API FUNCTIONS ---
+
+export const createRequest = async (data: any): Promise<ApiResponse<any>> => {
+  const response = await api.post<ApiResponse<any>>('/requests', data);
+  return response.data;
+};
+
+export const getMyRequests = async (): Promise<ApiResponse<any[]>> => {
+  const response = await api.get<ApiResponse<any[]>>('/requests/my');
+  return response.data;
+};
+
+export const getAllRequests = async (): Promise<ApiResponse<any[]>> => {
+  const response = await api.get<ApiResponse<any[]>>('/requests');
+  return response.data;
+};
+
+export const updateRequestStatus = async (id: string, status: string): Promise<ApiResponse<any>> => {
+  const response = await api.put<ApiResponse<any>>(`/requests/${id}`, { status });
   return response.data;
 };
 

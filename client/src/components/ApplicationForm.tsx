@@ -117,30 +117,8 @@ const ApplicationForm = () => {
         return;
       }
       try {
-        // Assuming getCourses supports filtering by department via query param
-        // If not, we might need to fetch all and filter client-side, but let's assume I fixed the backend API
-        // Actually, I did update the backend to support ?department=ID
-        // But getCourses in api.ts might not support passing params yet.
-        // I'll check api.ts later. For now, I'll use direct axios call or update api.ts
-        // Let's assume I'll update api.ts to accept params or just filter client side if needed.
-        // Wait, I can just use the api instance directly if needed.
-        // But let's try to use getCourses and filter client side if the API returns all.
-        // Actually, I updated the backend to filter.
-        // I need to make sure the frontend calls it with the param.
-        
-        // Let's manually construct the URL for now to be safe
-        // Or better, update getCourses in api.ts. 
-        // For this file, I'll use a direct fetch if getCourses doesn't support args.
-        // But let's assume I'll fix api.ts.
-        
-        // Temporary: fetch all and filter (safest if I forget to update api.ts)
-        const res = await getCourses(); 
-        const filtered = res.data.filter((c: any) => {
-            // Check if department is populated object or string ID
-            const deptId = typeof c.department === 'object' ? c.department._id : c.department;
-            return deptId === department;
-        });
-        setAvailableCourses(filtered);
+        const res = await getCourses({ department });
+        setAvailableCourses(res.data);
       } catch (err) {
         console.error('Could not fetch courses:', err);
       }
@@ -151,6 +129,8 @@ const ApplicationForm = () => {
     setFormData(prev => ({ ...prev, courses: [] }));
   }, [department]);
 
+  const [lockedDepartment, setLockedDepartment] = useState<string | null>(null);
+
   // Fetch user's applications
   useEffect(() => {
     const fetchMyApplications = async () => {
@@ -158,12 +138,14 @@ const ApplicationForm = () => {
         const res = await getMyApplications();
         setMyApplications(res.data);
         
-        // Extract course IDs for accepted applications
-        // Note: The backend now returns 'courses' array in application
-        // But existing applications might still have 'desiredCourse' string?
-        // No, I updated the model. Old data might be broken or I need to handle it.
-        // For new applications, 'courses' will be populated.
-        
+        // Check for active applications to lock department
+        const activeApp = res.data.find((app: any) => app.status !== 'rejected');
+        if (activeApp) {
+            const activeDeptId = typeof activeApp.department === 'object' ? activeApp.department._id : activeApp.department;
+            setFormData(prev => ({ ...prev, department: activeDeptId }));
+            setLockedDepartment(activeDeptId);
+        }
+
         const enrolledIds: string[] = [];
         res.data.forEach((app: any) => {
           if (app.status === 'accepted') {
@@ -315,12 +297,18 @@ const ApplicationForm = () => {
               <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
                 <Building2 className="w-4 h-4" /> Select Department
               </label>
+              {lockedDepartment && (
+                <p className="text-sm text-yellow-600 bg-yellow-50 p-2 rounded border border-yellow-200 mb-2">
+                  Note: You are currently restricted to the selected department because you have active applications.
+                </p>
+              )}
               <select
                 name="department"
                 value={department}
                 onChange={onChange}
                 required
-                className="w-full px-4 py-3 bg-white border border-gray-300 rounded text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                disabled={!!lockedDepartment}
+                className={`w-full px-4 py-3 bg-white border border-gray-300 rounded text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 ${lockedDepartment ? 'bg-gray-100 cursor-not-allowed' : ''}`}
               >
                 <option value="">-- Choose a Department --</option>
                 {departments.map(dept => (
