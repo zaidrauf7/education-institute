@@ -21,15 +21,21 @@ const app = express();
 app.use(express.json());
 app.use(cors()); // Enable CORS for all routes
 
-// Define routes
-app.use('/api/auth', authRoutes);
-app.use('/api/users', userRoutes); // <-- Mount user routes
-app.use('/api/applications', applicationRoutes); 
-app.use('/api/courses', courseRoutes);
-app.use('/api/departments', departmentRoutes); // <-- Mount department routes
-app.use('/api/gpa', gpaRoutes);
-app.use('/api/chat', chatRoutes);
-app.use('/api/requests', requestRoutes);
+const apiRouter = express.Router();
+
+// Define routes on the API router
+apiRouter.use('/auth', authRoutes);
+apiRouter.use('/users', userRoutes);
+apiRouter.use('/applications', applicationRoutes);
+apiRouter.use('/courses', courseRoutes);
+apiRouter.use('/departments', departmentRoutes);
+apiRouter.use('/gpa', gpaRoutes);
+apiRouter.use('/chat', chatRoutes);
+apiRouter.use('/requests', requestRoutes);
+
+// Mount the API router
+app.use('/api', apiRouter); // Standard API path
+app.use('/', apiRouter);    // Fallback for requests without /api prefix
 
 app.get('/', (req, res) => {
   res.send('API is running...');
