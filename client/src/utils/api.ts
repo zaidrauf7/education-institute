@@ -3,8 +3,14 @@ import axios from 'axios';
 
 interface MeResponse extends ApiResponse<User> {}
 
+const baseURL = import.meta.env.VITE_API_URL || '/api';
+console.log('API config:', { 
+  envApiUrl: import.meta.env.VITE_API_URL, 
+  usedBaseURL: baseURL 
+});
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || '/api',
+  baseURL,
 });
 
 api.interceptors.request.use(
