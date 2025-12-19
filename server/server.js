@@ -1,6 +1,7 @@
 // server.js (updated)
 
 import express from 'express';
+import cors from 'cors';
 import dotenv from 'dotenv';
 import connectDB from './config/db.js';
 import authRoutes from './routes/auth.js';
@@ -18,6 +19,7 @@ connectDB();
 
 const app = express();
 app.use(express.json());
+app.use(cors()); // Enable CORS for all routes
 
 // Define routes
 app.use('/api/auth', authRoutes);
